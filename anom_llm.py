@@ -13,13 +13,13 @@ class HealthRecord:
     timestamp: str
     heart_rate: float = None
     hrv: float = None
-    steps: int = None 
-    resting_hr: float = None 
+    steps: int = None
+    resting_hr: float = None
     calories_burned: float = None
-    sleep_hours: Optional[float] = None 
+    sleep_hours: Optional[float] = None
     spo2: Optional[float] = None
     blood_glucose: Optional[float] = None
-    stress_score: Optional[float] = None 
+    stress_score: Optional[float] = None
     respiratory_rate: Optional[float] = None
     body_temperature: Optional[float] = None
     skin_temp_variation: Optional[float] = None
@@ -36,22 +36,21 @@ class Anomaly:
     context_window: list[dict]   # surrounding records for LLM
 
 
-# pre-screen 
+# pre-screen
 
 class StatisticalScreener:
-    # run 1st to save API calls/tokens  
+    # run 1st to save API calls/tokens
 
-    # hard bounds regardless of baselines 
+    # hard bounds regardless of baselines
     HARD_BOUNDS = {
-        "heart_rate":  (30, 250),
-        "hrv":         (10, 300),
+        "heart_rate":  (40, 220),
+        "hrv":         (0, 300),
         "resting_hr": (30, 150),
-        "spo2":        (50, 100),
+        "spo2":        (80, 100),
         "blood_glucose": (50, 140),
         "stress_score":(0, 100),
-        "respiratory_rate": (5, 35),       
-        "skin_temp_variation": (-2.0, 2.0),
-        "body_temperature": (50, 120),
+        "respiratory_rate": (5, 35),
+        "skin_temp_variation": (-3.0, 3.0),
     }
 
     ECG_CONCERNING_VALUES = {"afib", "high_hr", "low_hr", "inconclusive"}
@@ -207,16 +206,16 @@ class StatisticalScreener:
         return found
 
 
-# llm analysis 
+# llm analysis
 
 class LLMAnalyzer:
-    
+
     def __init__(self, model: str = "claude-sonnet-4-6"):
         self.client = anthropic.Anthropic()
         self.model = model
 
     def analyze(self, anomalies: list[Anomaly], user_context: str = "") -> dict:
-        
+
         if not anomalies:
             return {
                 "anomaly_assessments": [],
@@ -263,7 +262,7 @@ class LLMAnalyzer:
 # orchestrator
 
 class HealthAnomalyDetector:
-    
+
     def __init__(self, records: list[HealthRecord]):
         self.records = records
         self.screener = StatisticalScreener(records)
